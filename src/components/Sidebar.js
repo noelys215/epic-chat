@@ -1,7 +1,35 @@
-import { Add, ExitToApp, SearchOutlined } from '@mui/icons-material';
+import { Add, ExitToApp, Home, Message, PeopleAlt, SearchOutlined } from '@mui/icons-material';
 import { Avatar, IconButton } from '@mui/material';
+import { useState } from 'react';
+import { SidebarTab } from './SidebarTab';
 
 export const Sidebar = ({ user }) => {
+	const [menu, setMenu] = useState(1);
+
+	const tabs = [
+		{
+			id: 1,
+			icon: <Home />,
+		},
+		{
+			id: 2,
+			icon: <Message />,
+		},
+		{
+			id: 3,
+			icon: <PeopleAlt />,
+		},
+	];
+	/* Dummy Data */
+	const data = [
+		{
+			id: 1,
+			name: 'Asuka Langley',
+			photoUrl:
+				'https://64.media.tumblr.com/b2702aa3e90fff9aecb3b01aec84bb83/e921c896b0f8c28a-95/s1280x1920/38b49fedca9250ba1f9ac1184fdb165b20d1e7ce.png',
+		},
+	];
+
 	return (
 		<div className="sidebar">
 			{/* Header */}
@@ -23,6 +51,21 @@ export const Sidebar = ({ user }) => {
 					<input type="text" placeholder="Search for users or rooms..." id="search" />
 				</form>
 			</div>
+			{/* SideBar */}
+			<div className="sidebar__menu">
+				{tabs.map((tab) => (
+					<SidebarTab
+						key={tab.id}
+						onClick={() => setMenu(tab.id)}
+						isActive={tab?.id === menu}>
+						<div className="sidebar__menu--home">
+							{tab?.icon}
+							<div className="sidebar__menu--line" />
+						</div>
+					</SidebarTab>
+				))}
+			</div>
+
 			{/* Create Room Button */}
 			<div className="sidebar__chat--addRoom">
 				<IconButton>
