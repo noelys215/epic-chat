@@ -2,6 +2,7 @@ import { Add, ExitToApp, Home, Message, PeopleAlt, SearchOutlined } from '@mui/i
 import { Avatar, IconButton } from '@mui/material';
 import { useState } from 'react';
 import { SidebarTab } from './SidebarTab';
+import { SidebarList } from './SidebarList';
 
 export const Sidebar = ({ user }) => {
 	const [menu, setMenu] = useState(1);
@@ -65,6 +66,16 @@ export const Sidebar = ({ user }) => {
 					</SidebarTab>
 				))}
 			</div>
+
+			{menu === 1 ? (
+				<SidebarList title="Chats" data={data} />
+			) : menu === 2 ? (
+				<SidebarList title="Rooms" data={data} />
+			) : menu === 3 ? (
+				<SidebarList title="Users" data={data} />
+			) : menu === 4 ? (
+				<SidebarList title="Search Results" data={data} />
+			) : null}
 
 			{/* Create Room Button */}
 			<div className="sidebar__chat--addRoom">
