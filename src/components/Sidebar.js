@@ -1,11 +1,27 @@
 import { Add, ExitToApp, Home, Message, PeopleAlt, SearchOutlined } from '@mui/icons-material';
-import { Avatar, IconButton } from '@mui/material';
+import {
+	Avatar,
+	Button,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogContentText,
+	DialogTitle,
+	IconButton,
+	TextField,
+} from '@mui/material';
 import { useState } from 'react';
 import { SidebarTab } from './SidebarTab';
 import { SidebarList } from './SidebarList';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/utils/firebase';
+import { useRouter } from 'next/router';
 
 export const Sidebar = ({ user }) => {
 	const [menu, setMenu] = useState(1);
+	const [isCreatingRoom, setIsCreatingRoom] = useState(true);
+	const [roomName, setRoomName] = useState('');
+	const router = useRouter();
 
 	const tabs = [
 		{
@@ -30,6 +46,20 @@ export const Sidebar = ({ user }) => {
 				'https://64.media.tumblr.com/b2702aa3e90fff9aecb3b01aec84bb83/e921c896b0f8c28a-95/s1280x1920/38b49fedca9250ba1f9ac1184fdb165b20d1e7ce.png',
 		},
 	];
+
+	const createRoom = async () => {
+		if (roomName?.trim) {
+			const roomsRef = collection(db, 'rooms');
+			const newRoom = await addDoc(roomsRef, {
+				name: roomName,
+				timestamp: serverTimestamp(),
+			});
+			setIsCreatingRoom(false);
+			setRoomName('');
+			setMenu(2);
+			router.push(`/?roomId=${newRoom?.id}`);
+		}
+	};
 
 	return (
 		<div className="sidebar">
@@ -79,10 +109,48 @@ export const Sidebar = ({ user }) => {
 
 			{/* Create Room Button */}
 			<div className="sidebar__chat--addRoom">
-				<IconButton>
+				<IconButton onClick={() => setIsCreatingRoom(true)}>
 					<Add />
 				</IconButton>
 			</div>
+
+			{/* Dialog */}
+			<Dialog open={isCreatingRoom} maxWidth="sm" onClose={() => setIsCreatingRoom(false)}>
+				<DialogTitle sx={{ font: 'inherit', textAlign: 'center' }}>
+					Create New Room
+				</DialogTitle>
+				<DialogContent>
+					<DialogContentText sx={{ font: 'inherit' }}>
+						Type the name of your public room; any users may join.
+					</DialogContentText>
+					<TextField
+						onChange={(e) => setRoomName(e.target.value)}
+						value={roomName}
+						autoFocus
+						margin="dense"
+						id={roomName}
+						label="Room Name"
+						type="text"
+						fullWidth
+						variant="filled"
+						style={{ font: 'inherit', marginTop: 20 }}
+					/>
+				</DialogContent>
+				<DialogActions>
+					<Button
+						onClick={() => setIsCreatingRoom(false)}
+						sx={{ font: 'inherit', fontWeight: 'bold' }}
+						color="error">
+						CANCEL
+					</Button>
+					<Button
+						onClick={createRoom}
+						sx={{ font: 'inherit', fontWeight: 'bold' }}
+						color="success">
+						SUBMIT
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</div>
 	);
 };
