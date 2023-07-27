@@ -14,7 +14,7 @@ import { useState } from 'react';
 import { SidebarTab } from './SidebarTab';
 import { SidebarList } from './SidebarList';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/utils/firebase';
+import { auth, db } from '@/utils/firebase';
 import { useRouter } from 'next/router';
 
 export const Sidebar = ({ user }) => {
@@ -70,7 +70,7 @@ export const Sidebar = ({ user }) => {
 					<h4>{user?.displayName}</h4>
 				</div>
 				<div className="sidebar__header--right">
-					<IconButton>
+					<IconButton onClick={() => auth.signOut()}>
 						<ExitToApp />
 					</IconButton>
 				</div>
