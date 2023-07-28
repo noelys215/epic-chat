@@ -16,12 +16,14 @@ import { SidebarList } from './SidebarList';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/utils/firebase';
 import { useRouter } from 'next/router';
+import { useRooms } from '@/hooks/useRooms';
 
 export const Sidebar = ({ user }) => {
 	const [menu, setMenu] = useState(1);
-	const [isCreatingRoom, setIsCreatingRoom] = useState(true);
+	const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 	const [roomName, setRoomName] = useState('');
 	const router = useRouter();
+	const rooms = useRooms();
 
 	const tabs = [
 		{
@@ -100,7 +102,7 @@ export const Sidebar = ({ user }) => {
 			{menu === 1 ? (
 				<SidebarList title="Chats" data={data} />
 			) : menu === 2 ? (
-				<SidebarList title="Rooms" data={data} />
+				<SidebarList title="Rooms" data={rooms} />
 			) : menu === 3 ? (
 				<SidebarList title="Users" data={data} />
 			) : menu === 4 ? (
