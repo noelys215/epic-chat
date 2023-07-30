@@ -1,10 +1,10 @@
 import { db } from '@/utils/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, orderBy, query } from 'firebase/firestore';
 import { useCollection } from 'react-firebase-hooks/firestore';
 
 export const useRooms = () => {
-	const [snapshot] = useCollection(collection(db, 'rooms'));
-
+	const [snapshot] = useCollection(query(collection(db, 'rooms'), orderBy('timestamp', 'desc')));
 	const rooms = snapshot?.docs.map((doc) => ({ id: doc?.id, ...doc?.data() }));
+
 	return rooms;
 };
