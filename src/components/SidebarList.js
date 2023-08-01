@@ -12,7 +12,7 @@ export const SidebarList = ({ title, data }) => {
 	return (
 		<div className="sidebar__chat--container">
 			<h2>{title}</h2>
-			{data.map((item) => (
+			{data?.map((item) => (
 				<SidebarListItem key={item.id} item={item} />
 			))}
 		</div>

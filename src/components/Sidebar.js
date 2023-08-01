@@ -13,7 +13,7 @@ import {
 import { useState } from 'react';
 import { SidebarTab } from './SidebarTab';
 import { SidebarList } from './SidebarList';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, serverTimestamp, where } from 'firebase/firestore';
 import { auth, db } from '@/utils/firebase';
 import { useRouter } from 'next/router';
 import { useRooms } from '@/hooks/useRooms';
@@ -24,6 +24,7 @@ export const Sidebar = ({ user }) => {
 	const [menu, setMenu] = useState(1);
 	const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 	const [roomName, setRoomName] = useState('');
+	const [searchResults, setSearchResults] = useState([]);
 	const router = useRouter();
 	const rooms = useRooms();
 	const users = useUsers(user);
@@ -43,15 +44,6 @@ export const Sidebar = ({ user }) => {
 			icon: <PeopleAlt />,
 		},
 	];
-	/* Dummy Data */
-	const data = [
-		{
-			id: 1,
-			name: 'Asuka Langley',
-			photoUrl:
-				'https://64.media.tumblr.com/b2702aa3e90fff9aecb3b01aec84bb83/e921c896b0f8c28a-95/s1280x1920/38b49fedca9250ba1f9ac1184fdb165b20d1e7ce.png',
-		},
-	];
 
 	const createRoom = async () => {
 		if (roomName?.trim) {
@@ -65,6 +57,26 @@ export const Sidebar = ({ user }) => {
 			setMenu(2);
 			router.push(`/?roomId=${newRoom?.id}`);
 		}
+	};
+
+	const searchUsersAndRooms = async (e) => {
+		e.preventDefault();
+		const searchVal = e.target.elements.search.value;
+		const userQuery = query(collection(db, 'users'), where('name', '==', searchVal));
+		const roomQuery = query(collection(db, 'rooms'), where('name', '==', searchVal));
+		const userSnapshot = await getDocs(userQuery);
+		const roomSnapshot = await getDocs(roomQuery);
+
+		const userResults = userSnapshot?.docs.map((doc) => {
+			const id = doc?.id > user?.uid ? `${doc?.id}${user?.uid}` : `${doc?.uid}${user?.id}`;
+			return { ...id, ...doc?.data() };
+		});
+
+		const roomsResults = roomSnapshot?.docs.map((doc) => ({ id: doc?.id, ...doc?.data() }));
+
+		const searchResults = [...userResults, ...roomsResults];
+		setMenu(4);
+		setSearchResults(searchResults);
 	};
 
 	return (
@@ -83,7 +95,7 @@ export const Sidebar = ({ user }) => {
 			</div>
 			{/* Search */}
 			<div className="sidebar__search">
-				<form className="sidebar__search--container">
+				<form onSubmit={searchUsersAndRooms} className="sidebar__search--container">
 					<SearchOutlined />
 					<input type="text" placeholder="Search for users or rooms..." id="search" />
 				</form>
@@ -110,7 +122,7 @@ export const Sidebar = ({ user }) => {
 			) : menu === 3 ? (
 				<SidebarList title="Users" data={users} />
 			) : menu === 4 ? (
-				<SidebarList title="Search Results" data={data} />
+				<SidebarList title="Search Results" data={searchResults} />
 			) : null}
 
 			{/* Create Room Button */}
