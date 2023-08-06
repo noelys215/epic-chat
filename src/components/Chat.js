@@ -1,6 +1,6 @@
 import { useRoom } from '@/hooks/useRoom';
-import { AddPhotoAlternate } from '@mui/icons-material';
-import { Avatar, IconButton } from '@mui/material';
+import { AddPhotoAlternate, MoreVert } from '@mui/icons-material';
+import { Avatar, IconButton, Menu, MenuItem } from '@mui/material';
 import { useRouter } from 'next/router';
 
 export const Chat = ({ user }) => {
@@ -28,6 +28,14 @@ export const Chat = ({ user }) => {
 							<AddPhotoAlternate />
 						</label>
 					</IconButton>
+
+					<IconButton>
+						<MoreVert />
+					</IconButton>
+
+					<Menu id="menu" keepMounted>
+						<MenuItem>Delete Room</MenuItem>
+					</Menu>
 				</div>
 			</div>
 		</div>
