@@ -4,6 +4,7 @@ import { Avatar, IconButton, Menu, MenuItem } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { MediaPreview } from './MediaPreview';
+import { ChatFooter } from './ChatFooter';
 
 export const Chat = ({ user }) => {
 	const router = useRouter();
@@ -70,6 +71,7 @@ export const Chat = ({ user }) => {
 
 			{/* Media Preview */}
 			<MediaPreview src={src} closePreview={closePreview} />
+			<ChatFooter />
 		</div>
 	);
 };
