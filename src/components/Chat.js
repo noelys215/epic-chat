@@ -5,6 +5,8 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { MediaPreview } from './MediaPreview';
 import { ChatFooter } from './ChatFooter';
+import { nanoid } from 'nanoid';
+import { collection, serverTimestamp } from 'firebase/firestore';
 
 export const Chat = ({ user }) => {
 	const router = useRouter();
@@ -14,6 +16,7 @@ export const Chat = ({ user }) => {
 	/* State */
 	const [image, setImage] = useState(null);
 	const [src, setSrc] = useState('');
+	const [input, setInput] = useState('');
 	/* Handlers */
 	const showPreview = (e) => {
 		const file = e.target.files[0];
@@ -31,6 +34,27 @@ export const Chat = ({ user }) => {
 	const closePreview = () => {
 		setSrc('');
 		setImage(null);
+	};
+
+	const sendMessage = async (e) => {
+		e.preventDefault();
+		setInput('');
+		if (image) closePreview();
+		const imageName = nanoid();
+		const newMessage = {
+			name: user?.displayName,
+			message: input,
+			uid: user?.uid,
+			timestamp: serverTimestamp(),
+			time: new Date().toUTCString(),
+			...(image ? { imageUrl: 'uploading', imageName } : {}),
+		};
+		await setDoc(doc(db, `users/${userId}/chats/${roomId}`), {
+			name: room?.name,
+			photoURL: room?.photoURL || null,
+			timestamp: serverTimestamp(),
+		});
+		await addDoc(collection(db, `rooms/${roomId}/messages`), newMessage);
 	};
 
 	!room && null;
@@ -71,7 +95,15 @@ export const Chat = ({ user }) => {
 
 			{/* Media Preview */}
 			<MediaPreview src={src} closePreview={closePreview} />
-			<ChatFooter />
+			<ChatFooter
+				input={input}
+				onChange={(e) => setInput(e.target.value)}
+				image={image}
+				user={user}
+				room={room}
+				roomId={roomId}
+				sendMessage={sendMessage}
+			/>
 		</div>
 	);
 };

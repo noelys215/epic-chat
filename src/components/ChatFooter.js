@@ -1,8 +1,9 @@
 import { CancelRounded, CheckCircleRounded, MicRounded, Send } from '@mui/icons-material';
 
-export const ChatFooter = () => {
+export const ChatFooter = ({ input, onChange, image, user, room, roomId, sendMessage }) => {
 	const canRecord = true;
 	const isRecording = true;
+	const canSendMessage = input.trim() || (input === '' && image);
 	const recordIcons = (
 		<>
 			<Send sx={{ width: 20, height: 20, color: 'white' }} />
@@ -13,13 +14,18 @@ export const ChatFooter = () => {
 		<div className="chat__footer">
 			<form>
 				<input
+					value={input}
+					onChange={onChange}
 					placeholder="Type a message"
 					style={{
 						width: isRecording ? 'calc(100% - 20px)' : 'calc(100% - 112px)',
 					}}
 				/>
 				{canRecord ? (
-					<button type="submit" className="send__btn">
+					<button
+						onClick={canSendMessage ? sendMessage : () => null}
+						type="submit"
+						className="send__btn">
 						{recordIcons}
 					</button>
 				) : (
