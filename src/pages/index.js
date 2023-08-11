@@ -5,8 +5,8 @@ import { useAuthUser } from '@/hooks/useAuthUser';
 
 export default function Home() {
 	const user = useAuthUser();
-	!user && <Login />;
-
+	if (!user) return <Login />;
+	console.log(user);
 	return (
 		<div className="app">
 			<div className="app__body">

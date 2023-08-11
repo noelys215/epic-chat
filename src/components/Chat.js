@@ -6,9 +6,13 @@ import { useState } from 'react';
 import { MediaPreview } from './MediaPreview';
 import { ChatFooter } from './ChatFooter';
 import { nanoid } from 'nanoid';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import Compressor from 'compressorjs';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { db, storage } from '@/utils/firebase';
 
 export const Chat = ({ user }) => {
+	console.log(user);
 	const router = useRouter();
 	const roomId = router.query.roomId ?? '';
 	const userId = user?.uid;
@@ -54,7 +58,25 @@ export const Chat = ({ user }) => {
 			photoURL: room?.photoURL || null,
 			timestamp: serverTimestamp(),
 		});
-		await addDoc(collection(db, `rooms/${roomId}/messages`), newMessage);
+		const newDoc = await addDoc(collection(db, `rooms/${roomId}/messages`), newMessage);
+
+		if (image) {
+			new Compressor(image, {
+				quality: 0.8,
+				maxWidth: 1920,
+				async success(res) {
+					setSrc('');
+					setImage(null);
+					await uploadBytes(ref(storage, `images/${imageName}`), res);
+					const url = await getDownloadURL(ref(storage, `images/${imageName}`));
+					await updateDoc(
+						doc(db, `rooms/${roomId}/messages/${newDoc?.id}`, {
+							imageUrl: url,
+						})
+					);
+				},
+			});
+		}
 	};
 
 	!room && null;

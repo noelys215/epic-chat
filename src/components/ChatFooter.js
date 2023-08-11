@@ -2,7 +2,7 @@ import { CancelRounded, CheckCircleRounded, MicRounded, Send } from '@mui/icons-
 
 export const ChatFooter = ({ input, onChange, image, user, room, roomId, sendMessage }) => {
 	const canRecord = true;
-	const isRecording = true;
+	const isRecording = false;
 	const canSendMessage = input.trim() || (input === '' && image);
 	const recordIcons = (
 		<>
