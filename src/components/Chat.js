@@ -10,6 +10,8 @@ import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from 'fir
 import Compressor from 'compressorjs';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { db, storage } from '@/utils/firebase';
+import { useChatMessages } from '@/hooks/useChatMessages';
+import ChatMessages from './ChatMessages';
 
 export const Chat = ({ user }) => {
 	console.log(user);
@@ -17,6 +19,7 @@ export const Chat = ({ user }) => {
 	const roomId = router.query.roomId ?? '';
 	const userId = user?.uid;
 	const room = useRoom(roomId, userId);
+	const messages = useChatMessages(roomId);
 	/* State */
 	const [image, setImage] = useState(null);
 	const [src, setSrc] = useState('');
@@ -45,20 +48,19 @@ export const Chat = ({ user }) => {
 		setInput('');
 		if (image) closePreview();
 		const imageName = nanoid();
-		const newMessage = {
+		await setDoc(doc(db, `users/${userId}/chats/${roomId}`), {
+			name: room?.name,
+			photoURL: room?.photoURL || null,
+			timestamp: serverTimestamp(),
+		});
+		const newDoc = await addDoc(collection(db, `rooms/${roomId}/messages`), {
 			name: user?.displayName,
 			message: input,
 			uid: user?.uid,
 			timestamp: serverTimestamp(),
 			time: new Date().toUTCString(),
 			...(image ? { imageUrl: 'uploading', imageName } : {}),
-		};
-		await setDoc(doc(db, `users/${userId}/chats/${roomId}`), {
-			name: room?.name,
-			photoURL: room?.photoURL || null,
-			timestamp: serverTimestamp(),
 		});
-		const newDoc = await addDoc(collection(db, `rooms/${roomId}/messages`), newMessage);
 
 		if (image) {
 			new Compressor(image, {
@@ -69,15 +71,15 @@ export const Chat = ({ user }) => {
 					setImage(null);
 					await uploadBytes(ref(storage, `images/${imageName}`), res);
 					const url = await getDownloadURL(ref(storage, `images/${imageName}`));
-					await updateDoc(
-						doc(db, `rooms/${roomId}/messages/${newDoc?.id}`, {
-							imageUrl: url,
-						})
-					);
+					await updateDoc(doc(db, `rooms/${roomId}/messages/${newDoc.id}`), {
+						imageUrl: url,
+					});
 				},
 			});
 		}
 	};
+
+	console.log(image);
 
 	!room && null;
 	return (
@@ -112,6 +114,12 @@ export const Chat = ({ user }) => {
 					<Menu id="menu" keepMounted>
 						<MenuItem>Delete Room</MenuItem>
 					</Menu>
+				</div>
+			</div>
+
+			<div className="chat__body--container">
+				<div className="chat__body">
+					<ChatMessages messages={messages} user={user} roomId={roomId} />
 				</div>
 			</div>
 
