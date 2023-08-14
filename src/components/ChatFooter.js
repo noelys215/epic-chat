@@ -1,8 +1,20 @@
+import recordAudio from '@/utils/recordAudio';
 import { CancelRounded, CheckCircleRounded, MicRounded, Send } from '@mui/icons-material';
+import { useRef, useState } from 'react';
 
-export const ChatFooter = ({ input, onChange, image, user, room, roomId, sendMessage }) => {
-	const canRecord = true;
-	const isRecording = false;
+export const ChatFooter = ({
+	input,
+	onChange,
+	image,
+	user,
+	room,
+	roomId,
+	sendMessage,
+	setAudioId,
+}) => {
+	const record = useRef();
+	const canRecord = !!navigator.mediaDevices.getUserMedia && !!window.MediaRecorder;
+	const [isRecording, setIsRecording] = useState(false);
 	const canSendMessage = input.trim() || (input === '' && image);
 	const recordIcons = (
 		<>
@@ -10,6 +22,14 @@ export const ChatFooter = ({ input, onChange, image, user, room, roomId, sendMes
 			<MicRounded sx={{ width: 24, height: 24, color: 'white' }} />
 		</>
 	);
+
+	const startRecording = async (e) => {
+		e.preventDefault();
+		record.current = await recordAudio();
+		setIsRecording(true);
+		setAudioId('');
+	};
+
 	return (
 		<div className="chat__footer">
 			<form>
@@ -23,7 +43,7 @@ export const ChatFooter = ({ input, onChange, image, user, room, roomId, sendMes
 				/>
 				{canRecord ? (
 					<button
-						onClick={canSendMessage ? sendMessage : () => null}
+						onClick={canSendMessage ? sendMessage : startRecording}
 						type="submit"
 						className="send__btn">
 						{recordIcons}

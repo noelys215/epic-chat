@@ -24,6 +24,7 @@ export const Chat = ({ user }) => {
 	const [image, setImage] = useState(null);
 	const [src, setSrc] = useState('');
 	const [input, setInput] = useState('');
+	const [audioId, setAudioId] = useState('');
 	/* Handlers */
 	const showPreview = (e) => {
 		const file = e.target.files[0];
@@ -119,7 +120,13 @@ export const Chat = ({ user }) => {
 
 			<div className="chat__body--container">
 				<div className="chat__body">
-					<ChatMessages messages={messages} user={user} roomId={roomId} />
+					<ChatMessages
+						messages={messages}
+						user={user}
+						roomId={roomId}
+						audioId={audioId}
+						setAudioId={setAudioId}
+					/>
 				</div>
 			</div>
 
@@ -133,6 +140,7 @@ export const Chat = ({ user }) => {
 				room={room}
 				roomId={roomId}
 				sendMessage={sendMessage}
+				setAudioId={setAudioId}
 			/>
 		</div>
 	);
