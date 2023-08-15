@@ -1,6 +1,6 @@
 import recordAudio from '@/utils/recordAudio';
 import { CancelRounded, CheckCircleRounded, MicRounded, Send } from '@mui/icons-material';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export const ChatFooter = ({
 	input,
@@ -13,6 +13,8 @@ export const ChatFooter = ({
 	setAudioId,
 }) => {
 	const record = useRef();
+	const [duration, setDuration] = useState('00:00');
+	const timerInterval = useRef();
 	const canRecord = !!navigator.mediaDevices.getUserMedia && !!window.MediaRecorder;
 	const [isRecording, setIsRecording] = useState(false);
 	const canSendMessage = input.trim() || (input === '' && image);
@@ -22,6 +24,29 @@ export const ChatFooter = ({
 			<MicRounded sx={{ width: 24, height: 24, color: 'white' }} />
 		</>
 	);
+
+	useEffect(() => {
+		if (isRecording) {
+			record.current.start();
+			startTimer();
+		}
+
+		const pad = (val) => (String(val).length < 2 ? `0${val}` : val);
+
+		const startTimer = () => {
+			const start = Date.now();
+			timerInterval.current = setInterval(setTime, 100);
+
+			const setTime = () => {
+				const timeElapsed = Date.now() - start;
+				const totalSeconds = Math.floor(timeElapsed / 1000);
+				const minutes = pad(parseInt(totalSeconds / 60));
+				const seconds = pad(parseInt(totalSeconds % 60));
+				const duration = `${minutes}:${seconds}`;
+				setDuration(duration);
+			};
+		};
+	}, [isRecording]);
 
 	const startRecording = async (e) => {
 		e.preventDefault();
@@ -69,7 +94,7 @@ export const ChatFooter = ({
 					<CancelRounded style={{ width: 30, height: 30, color: '#f20519' }} />
 					<div>
 						<div className="record__redcircle" />
-						<div className="record__duration">0:00</div>
+						<div className="record__duration">{duration}</div>
 					</div>
 					<CheckCircleRounded style={{ width: 30, height: 30, color: '#41bf49' }} />
 				</div>
