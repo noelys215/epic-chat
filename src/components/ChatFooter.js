@@ -25,34 +25,44 @@ export const ChatFooter = ({
 		</>
 	);
 
-	useEffect(() => {
-		if (isRecording) {
-			record.current.start();
-			startTimer();
-		}
+	useEffect(
+		function () {
+			if (isRecording) {
+				record.current.start();
+				startTimer();
+			}
 
-		const pad = (val) => (String(val).length < 2 ? `0${val}` : val);
+			const pad = (val) => (String(val).length < 2 ? `0${val}` : val);
 
-		const startTimer = () => {
-			const start = Date.now();
-			timerInterval.current = setInterval(setTime, 100);
+			function startTimer() {
+				const start = Date.now();
+				timerInterval.current = setInterval(setTime, 100);
 
-			const setTime = () => {
-				const timeElapsed = Date.now() - start;
-				const totalSeconds = Math.floor(timeElapsed / 1000);
-				const minutes = pad(parseInt(totalSeconds / 60));
-				const seconds = pad(parseInt(totalSeconds % 60));
-				const duration = `${minutes}:${seconds}`;
-				setDuration(duration);
-			};
-		};
-	}, [isRecording]);
+				function setTime() {
+					const timeElapsed = Date.now() - start;
+					const totalSeconds = Math.floor(timeElapsed / 1000);
+					const minutes = pad(parseInt(totalSeconds / 60));
+					const seconds = pad(parseInt(totalSeconds % 60));
+					const duration = `${minutes}:${seconds}`;
+					setDuration(duration);
+				}
+			}
+		},
+		[isRecording]
+	);
 
 	const startRecording = async (e) => {
 		e.preventDefault();
 		record.current = await recordAudio();
 		setIsRecording(true);
 		setAudioId('');
+	};
+
+	const stopRecording = () => {
+		clearInterval(timerInterval.current);
+		setIsRecording(false);
+		record.current.stop();
+		setDuration('00:00');
 	};
 
 	return (
@@ -91,7 +101,10 @@ export const ChatFooter = ({
 
 			{isRecording && (
 				<div className="record">
-					<CancelRounded style={{ width: 30, height: 30, color: '#f20519' }} />
+					<CancelRounded
+						onClick={stopRecording}
+						style={{ width: 30, height: 30, color: '#f20519' }}
+					/>
 					<div>
 						<div className="record__redcircle" />
 						<div className="record__duration">{duration}</div>
