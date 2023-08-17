@@ -1,5 +1,8 @@
+import { db, storage } from '@/utils/firebase';
 import recordAudio from '@/utils/recordAudio';
 import { CancelRounded, CheckCircleRounded, MicRounded, Send } from '@mui/icons-material';
+import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { useEffect, useRef, useState } from 'react';
 
 export const ChatFooter = ({
@@ -58,12 +61,41 @@ export const ChatFooter = ({
 		setAudioId('');
 	};
 
-	const stopRecording = () => {
+	const stopRecording = async () => {
 		clearInterval(timerInterval.current);
 		setIsRecording(false);
-		record.current.stop();
+		const audio = await record.current.stop();
 		setDuration('00:00');
+		return audio;
 	};
+
+	async function finishRecording() {
+		const audio = await stopRecording();
+		sendAudio(({ audioFile, audioName } = await audio));
+	}
+
+	async function sendAudio(audioFile, audioName) {
+		await setDoc(doc(db, `users/${user.uid}/chats/${roomId}`), {
+			name: room?.name,
+			photoURL: room?.photoURL || null,
+			timestamp: serverTimestamp(),
+		});
+		const newDoc = await addDoc(collection(db, `rooms/${roomId}/messages`), {
+			name: user?.displayName,
+			uid: user?.uid,
+			timestamp: serverTimestamp(),
+			time: new Date().toUTCString(),
+			audioUrl: 'uploading',
+			audioName,
+		});
+		await uploadBytes(ref(storage, `audio/${audioName}`), audioFile);
+		const url = await getDownloadURL(ref(storage, `audio/${audioName}`));
+		await updateDoc(
+			doc(db, `rooms/${roomId}/messages/${newDoc.id}`, {
+				audioUrl: url,
+			})
+		);
+	}
 
 	return (
 		<div className="chat__footer">
