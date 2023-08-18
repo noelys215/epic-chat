@@ -3,6 +3,7 @@ import recordAudio from '@/utils/recordAudio';
 import { CancelRounded, CheckCircleRounded, MicRounded, Send } from '@mui/icons-material';
 import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { nanoid } from 'nanoid';
 import { useEffect, useRef, useState } from 'react';
 
 export const ChatFooter = ({
@@ -97,6 +98,16 @@ export const ChatFooter = ({
 		);
 	}
 
+	function audioInputChange(e) {
+		const audioFile = e.target.files[0];
+		const audioName = nanoid();
+
+		if (audioFile) {
+			setAudioId('');
+			sendAudio(audioFile, audioName);
+		}
+	}
+
 	return (
 		<div className="chat__footer">
 			<form>
@@ -126,6 +137,7 @@ export const ChatFooter = ({
 							id="capture"
 							accept="audio/*"
 							capture
+							onChange={audioInputChange}
 						/>
 					</>
 				)}
