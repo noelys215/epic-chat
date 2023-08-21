@@ -1,6 +1,6 @@
 import { useRoom } from '@/hooks/useRoom';
 import { AddPhotoAlternate, MoreVert } from '@mui/icons-material';
-import { Avatar, IconButton, Menu, MenuItem } from '@mui/material';
+import { Avatar, CircularProgress, IconButton, Menu, MenuItem } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { MediaPreview } from './MediaPreview';
@@ -25,6 +25,10 @@ export const Chat = ({ user }) => {
 	const [src, setSrc] = useState('');
 	const [input, setInput] = useState('');
 	const [audioId, setAudioId] = useState('');
+	//
+	const [openMenu, setOpenMenu] = useState(null);
+	const [isDeleting, setIsDeleting] = useState(null);
+
 	/* Handlers */
 	const showPreview = (e) => {
 		const file = e.target.files[0];
@@ -79,8 +83,10 @@ export const Chat = ({ user }) => {
 			});
 		}
 	};
-
-	console.log(image);
+	const deleteRoom = async () => {
+		setOpenMenu(null);
+		setIsDeleting(true);
+	};
 
 	!room && null;
 	return (
@@ -108,16 +114,20 @@ export const Chat = ({ user }) => {
 						</label>
 					</IconButton>
 
-					<IconButton>
+					<IconButton onClick={(e) => setOpenMenu(e.currentTarget)}>
 						<MoreVert />
 					</IconButton>
 
-					<Menu id="menu" keepMounted>
-						<MenuItem>Delete Room</MenuItem>
+					<Menu
+						id="menu"
+						keepMounted
+						anchorEl={openMenu}
+						open={!!openMenu}
+						onClose={() => setOpenMenu(null)}>
+						<MenuItem onClick={deleteRoom}>Delete Room</MenuItem>
 					</Menu>
 				</div>
 			</div>
-
 			<div className="chat__body--container">
 				<div className="chat__body">
 					<ChatMessages
@@ -129,7 +139,6 @@ export const Chat = ({ user }) => {
 					/>
 				</div>
 			</div>
-
 			{/* Media Preview */}
 			<MediaPreview src={src} closePreview={closePreview} />
 			<ChatFooter
@@ -142,6 +151,11 @@ export const Chat = ({ user }) => {
 				sendMessage={sendMessage}
 				setAudioId={setAudioId}
 			/>
+			{isDeleting && (
+				<div className="chat__deleting">
+					<CircularProgress />
+				</div>
+			)}
 		</div>
 	);
 };
