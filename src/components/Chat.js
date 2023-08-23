@@ -86,6 +86,16 @@ export const Chat = ({ user }) => {
 	const deleteRoom = async () => {
 		setOpenMenu(null);
 		setIsDeleting(true);
+
+		try {
+			const userChatsRef = doc(db, `users/${userId}/chats/${roomId}`);
+			const roomRef = doc(db, `rooms/${roomId}`);
+			const roomMessagesRef = collection(db, `rooms/${roomId}/messages`);
+		} catch (err) {
+			console.error(`Error deleting room: ${err}`);
+		} finally {
+			setIsDeleting(false);
+		}
 	};
 
 	!room && null;
