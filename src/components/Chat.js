@@ -9,6 +9,7 @@ import { nanoid } from 'nanoid';
 import {
 	addDoc,
 	collection,
+	deleteDoc,
 	doc,
 	getDocs,
 	query,
@@ -17,7 +18,7 @@ import {
 	updateDoc,
 } from 'firebase/firestore';
 import Compressor from 'compressorjs';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { db, storage } from '@/utils/firebase';
 import { useChatMessages } from '@/hooks/useChatMessages';
 import ChatMessages from './ChatMessages';
@@ -101,6 +102,23 @@ export const Chat = ({ user }) => {
 			const roomRef = doc(db, `rooms/${roomId}`);
 			const roomMessagesRef = collection(db, `rooms/${roomId}/messages`);
 			const roomMessages = await getDocs(query(roomMessagesRef));
+			const audioFiles = [];
+			const imageFiles = [];
+			roomMessages?.docs.forEach((doc) => {
+				if (doc?.data().audioName) {
+					audioFiles.push(doc?.data().audioName);
+				} else if (doc?.data().imageName) {
+					imageFiles.push(doc?.data().imageName);
+				}
+			});
+
+			await Promise.all([
+				deleteDoc(userChatsRef),
+				deleteDoc(roomRef),
+				...roomMessages.docs.map((doc) => deleteDoc(doc.ref)),
+				...imageFiles.map((img) => deleteObject(ref(storage, `images/${img}`))),
+				...audioFiles.map((audio) => deleteObject(ref(storage, `audio/${audio}`))),
+			]);
 		} catch (err) {
 			console.error(`Error deleting room: ${err}`);
 		} finally {
