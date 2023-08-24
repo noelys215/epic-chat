@@ -6,7 +6,16 @@ import { useState } from 'react';
 import { MediaPreview } from './MediaPreview';
 import { ChatFooter } from './ChatFooter';
 import { nanoid } from 'nanoid';
-import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import {
+	addDoc,
+	collection,
+	doc,
+	getDocs,
+	query,
+	serverTimestamp,
+	setDoc,
+	updateDoc,
+} from 'firebase/firestore';
 import Compressor from 'compressorjs';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { db, storage } from '@/utils/firebase';
@@ -91,6 +100,7 @@ export const Chat = ({ user }) => {
 			const userChatsRef = doc(db, `users/${userId}/chats/${roomId}`);
 			const roomRef = doc(db, `rooms/${roomId}`);
 			const roomMessagesRef = collection(db, `rooms/${roomId}/messages`);
+			const roomMessages = await getDocs(query(roomMessagesRef));
 		} catch (err) {
 			console.error(`Error deleting room: ${err}`);
 		} finally {
